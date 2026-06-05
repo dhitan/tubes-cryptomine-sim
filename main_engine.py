@@ -69,10 +69,74 @@ class MiningEngine:
         return None
 
     def cari_binary(self, nama_target):
-        pass
+        kiri = 0
+        kanan = len(self.koleksi_koin) - 1
+        
+        while kiri <= kanan:
+            tengah = (kiri + kanan) // 2
+            koin_tengah = self.koleksi_koin[tengah]
+            
+            if koin_tengah.nama.lower() == nama_target.lower():
+                return koin_tengah
+            
+            if koin_tengah.nama.lower() < nama_target.lower():
+                kiri = tengah + 1
+            else:
+                kanan = tengah - 1
+                
+        return None
 
     def urutkan_selection(self, berdasarkan='difficulty'):
-        pass
+        jumlah = len(self.koleksi_koin)
+        i = 0
+        while i < jumlah - 1:
+            indeks_minimum = i
+            j = i + 1
+            while j < jumlah:
+                koin_min = self.koleksi_koin[indeks_minimum]
+                koin_j = self.koleksi_koin[j]
+                
+                nilai_min = koin_min.difficulty
+                nilai_j = koin_j.difficulty
+                
+                if berdasarkan == 'reward':
+                    nilai_min = koin_min.reward
+                    nilai_j = koin_j.reward
+                    
+                if nilai_j < nilai_min:
+                    indeks_minimum = j
+                j = j + 1
+                
+            temp = self.koleksi_koin[i]
+            self.koleksi_koin[i] = self.koleksi_koin[indeks_minimum]
+            self.koleksi_koin[indeks_minimum] = temp
+            i = i + 1
 
     def urutkan_insertion(self, berdasarkan='reward'):
-        pass
+        jumlah = len(self.koleksi_koin)
+        i = 1
+        while i < jumlah:
+            koin_kunci = self.koleksi_koin[i]
+            
+            nilai_kunci = koin_kunci.reward
+            if berdasarkan == 'difficulty':
+                nilai_kunci = koin_kunci.difficulty
+                
+            j = i - 1
+            sedang_geser = True
+            
+            while j >= 0 and sedang_geser:
+                koin_j = self.koleksi_koin[j]
+                
+                nilai_j = koin_j.reward
+                if berdasarkan == 'difficulty':
+                    nilai_j = koin_j.difficulty
+                    
+                if nilai_j > nilai_kunci:
+                    self.koleksi_koin[j + 1] = self.koleksi_koin[j]
+                    j = j - 1
+                else:
+                    sedang_geser = False
+                    
+            self.koleksi_koin[j + 1] = koin_kunci
+            i = i + 1

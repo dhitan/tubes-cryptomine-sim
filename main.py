@@ -12,6 +12,11 @@ class CryptoApp(QWidget):
         self.engine.get_data_coingecko()
         self.render_tableWidget()
 
+        self.ui.lineEdit.textChanged.connect(self.fitur_cari)
+        self.ui.comboBox.currentTextChanged.connect(self.fitur_urutkan)
+        
+        self.ui.pushButton.clicked.connect(self.tampilkan_grafik)
+
     def render_tableWidget(self):
         self.ui.tableWidget.setRowCount(0)
         
@@ -72,6 +77,53 @@ class CryptoApp(QWidget):
         if koin in self.engine.koleksi_koin:
             self.engine.koleksi_koin.remove(koin) 
             self.render_tableWidget()
+
+    def fitur_cari(self, teks):
+        if teks == "":
+            self.engine.koleksi_koin.clear()
+            self.engine.get_data_coingecko()
+            self.render_tableWidget()
+        else:
+            hasil = self.engine.cari_sequential(teks)
+            self.ui.tableWidget.setRowCount(0)
+            if hasil != None:
+                self.ui.tableWidget.insertRow(0)
+                item1 = QTableWidgetItem(str(hasil.nama))
+                self.ui.tableWidget.setItem(0, 0, item1)
+                item2 = QTableWidgetItem(str(hasil.simbol))
+                self.ui.tableWidget.setItem(0, 1, item2)
+                item3 = QTableWidgetItem(str(hasil.difficulty))
+                self.ui.tableWidget.setItem(0, 2, item3)
+                item4 = QTableWidgetItem(str(hasil.algoritma))
+                self.ui.tableWidget.setItem(0, 3, item4)
+                item5 = QTableWidgetItem(str(hasil.reward))
+                self.ui.tableWidget.setItem(0, 4, item5)
+                item6 = QTableWidgetItem(str(hasil.block_time))
+                self.ui.tableWidget.setItem(0, 5, item6)
+                item7 = QTableWidgetItem(str(hasil.power_consumption))
+                self.ui.tableWidget.setItem(0, 6, item7)
+
+    def fitur_urutkan(self, teks):
+        if teks == "Difficulty":
+            self.engine.urutkan_selection("difficulty")
+        elif teks == "Block Reward":
+            self.engine.urutkan_insertion("reward")
+            
+        self.render_tableWidget()
+        self.tampilkan_grafik()
+
+    def tampilkan_grafik(self):
+        import matplotlib.pyplot as plt
+        nama_koin = []
+        harga_koin = []
+        i = 0
+        while i < len(self.engine.koleksi_koin):
+            nama_koin.append(self.engine.koleksi_koin[i].simbol)
+            harga_koin.append(self.engine.koleksi_koin[i].reward)
+            i = i + 1
+            
+        plt.bar(nama_koin, harga_koin)
+        plt.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
