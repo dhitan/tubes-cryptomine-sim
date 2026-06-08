@@ -1,12 +1,12 @@
 BLOM JADI:
-- edit button pop up
-- tambah pop up delete buat konfirmasi + cari cara biar program ga dwnload data lagi
-- fitur search cuma nampilin 1 koin doang FIX INI
-- sorting masih bingung mau yang mana binary search, yang mana yang insertion(rombak ntar)
-- grafiknya belum dihubungin FIX INI JUGA
+- [x] edit button pop up
+- [ ] fitur search cuma nampilin 1 koin doang FIX INI
+- [ ] sorting masih bingung mau yang mana binary search, yang mana yang insertion(rombak ntar)
+- [ ] grafiknya belum dihubungin FIX INI JUGA
 
 GANTI:
-- difficulty ganti ke total network hash, hapus power consumtion di bagian coin.
+- [x] difficulty ganti ke total network hash, hapus power consumtion di bagian coin.
 
 BUAT:
-- buat sorting kolom nama, block reward, total network hash.
+- [ ] buat sorting kolom nama, block reward, total network hash.
+- [x] tambah pop up delete buat konfirmasi + cari cara biar program ga dwnload data lagi
