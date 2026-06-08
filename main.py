@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPush
 from ui_main import Ui_Form
 from main_engine import MiningEngine 
 
-class CryptoApp(QWidget):
+class Kishar(QWidget):
     def __init__(self):
         super().__init__()
         self.ui = Ui_Form()
@@ -12,10 +12,10 @@ class CryptoApp(QWidget):
         self.engine.get_data_coingecko()
         self.render_tableWidget()
 
-        self.ui.lineEdit.textChanged.connect(self.fitur_cari)
-        self.ui.comboBox.currentTextChanged.connect(self.fitur_urutkan)
+        self.ui.lineEdit.textChanged.connect(self.search)
+        self.ui.comboBox.currentTextChanged.connect(self.main_sort)
         
-        self.ui.pushButton.clicked.connect(self.tampilkan_grafik)
+        self.ui.pushButton.clicked.connect(self.show_chart)
 
     def render_tableWidget(self):
         self.ui.tableWidget.setRowCount(0)
@@ -45,10 +45,10 @@ class CryptoApp(QWidget):
             item7 = QTableWidgetItem(str(koin.power_consumption))
             self.ui.tableWidget.setItem(baris, 6, item7)
             
-            self.buat_tombol_aksi_tabel(baris, koin)
+            self.btn_table_action(baris, koin)
             baris = baris + 1
 
-    def buat_tombol_aksi_tabel(self, baris, koin):
+    def btn_table_action(self, baris, koin):
         widget_aksi = QWidget()
         layout_aksi = QHBoxLayout(widget_aksi)
         
@@ -63,22 +63,22 @@ class CryptoApp(QWidget):
         layout_aksi.addWidget(btn_edit)
         layout_aksi.addWidget(btn_hapus)
 
-        btn_edit.clicked.connect(lambda checked, k=koin: self.edit_koin(k))
-        btn_hapus.clicked.connect(lambda checked, k=koin: self.hapus_koin(k))
+        btn_edit.clicked.connect(lambda checked, k=koin: self.editCoin(k))
+        btn_hapus.clicked.connect(lambda checked, k=koin: self.delCoin(k))
 
         kolom_aksi = 7 
         self.ui.tableWidget.setCellWidget(baris, kolom_aksi, widget_aksi)
 
-    def edit_koin(self, koin):
-        print("Tombol edit dipencet untuk koin: " + str(koin.nama))
+    def editCoin(self, koin):
+        print("Edit",koin.nama,"triggred")
 
-    def hapus_koin(self, koin):
-        print("Tombol hapus dipencet untuk koin: " + str(koin.nama))
+    def delCoin(self, koin):
+        print("Delete",koin.nama,"triggred")
         if koin in self.engine.koleksi_koin:
             self.engine.koleksi_koin.remove(koin) 
             self.render_tableWidget()
 
-    def fitur_cari(self, teks):
+    def search(self, teks):
         if teks == "":
             self.engine.koleksi_koin.clear()
             self.engine.get_data_coingecko()
@@ -103,16 +103,16 @@ class CryptoApp(QWidget):
                 item7 = QTableWidgetItem(str(hasil.power_consumption))
                 self.ui.tableWidget.setItem(0, 6, item7)
 
-    def fitur_urutkan(self, teks):
+    def main_sort(self, teks):
         if teks == "Difficulty":
             self.engine.urutkan_selection("difficulty")
         elif teks == "Block Reward":
             self.engine.urutkan_insertion("reward")
             
         self.render_tableWidget()
-        self.tampilkan_grafik()
+        self.show_chart()
 
-    def tampilkan_grafik(self):
+    def show_chart(self):
         import matplotlib.pyplot as plt
         nama_koin = []
         harga_koin = []
@@ -127,6 +127,6 @@ class CryptoApp(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = CryptoApp()
+    window = Kishar()
     window.show()
     sys.exit(app.exec())
