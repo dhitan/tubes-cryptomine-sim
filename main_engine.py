@@ -1,4 +1,6 @@
 import requests
+import json
+import os
 
 class CryptoAsset:
     def __init__(self, nama, simbol, algoritma, difficulty, reward, block_time, power_consumption):
@@ -13,6 +15,44 @@ class CryptoAsset:
 class MiningEngine:
     def __init__(self):
         self.koleksi_koin = []
+        self.data_file = "data.json"
+        self.load_data()
+
+    def load_data(self):
+        if os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, 'r') as f:
+                    data_list = json.load(f)
+                    self.koleksi_koin = [CryptoAsset.from_dict(d) for d in data_list]
+                return
+            except Exception as e:
+                print("Gagal memuat data dari JSON:", e)
+        
+        self.get_data_coingecko()
+        self.save_data()
+
+    def save_data(self):
+        try:
+            with open(self.data_file, 'w') as f:
+                json.dump([koin.to_dict() for koin in self.koleksi_koin], f, indent=4)
+        except Exception as e:
+            print("Gagal menyimpan data ke JSON:", e)
+
+    def add_coin(self, koin):
+        self.koleksi_koin.append(koin)
+        self.save_data()
+
+    def update_coin(self, koin_lama, koin_baru):
+        for i, k in enumerate(self.koleksi_koin):
+            if k == koin_lama:
+                self.koleksi_koin[i] = koin_baru
+                break
+        self.save_data()
+
+    def delete_coin(self, koin):
+        if koin in self.koleksi_koin:
+            self.koleksi_koin.remove(koin)
+            self.save_data()
 
     def get_data_coingecko(self):
         url = "https://api.coingecko.com/api/v3/coins/markets"
@@ -39,12 +79,11 @@ class MiningEngine:
                     nama_koin = item['name']
                     simbol_koin = item['symbol'].upper()
                     algo = "SHA-256"
-                    diff = item['market_cap_rank'] * 5000
+                    total_network_hash = item['market_cap_rank'] * 5000
                     rew = item['current_price'] * 0.05
                     wkt_blok = 600 
-                    dy_watt = 3500  
                     
-                    koin_baru = CryptoAsset(nama_koin, simbol_koin, algo, diff, rew, wkt_blok, dy_watt)
+                    koin_baru = CryptoAsset(nama_koin, simbol_koin, algo, total_network_hash, rew, wkt_blok)
                     self.koleksi_koin.append(koin_baru)
                     i = i + 1
             else:
@@ -54,7 +93,7 @@ class MiningEngine:
             print("Waduh, gagal get data API nih ngab: " + str(e))
 
     def hitung_estimasi_mining(self, koin, hashrate_user):
-        estimasi_waktu = koin.difficulty / (hashrate_user + 1)
+        estimasi_waktu = koin.total_network_hash / (hashrate_user + 1)
         daya_watt = hashrate_user * 1.5 
         return estimasi_waktu, daya_watt
 
@@ -86,7 +125,7 @@ class MiningEngine:
                 
         return None
 
-    def urutkan_selection(self, berdasarkan='difficulty'):
+    def urutkan_selection(self, berdasarkan='total_network_hash'):
         jumlah = len(self.koleksi_koin)
         i = 0
         while i < jumlah - 1:
@@ -96,8 +135,8 @@ class MiningEngine:
                 koin_min = self.koleksi_koin[indeks_minimum]
                 koin_j = self.koleksi_koin[j]
                 
-                nilai_min = koin_min.difficulty
-                nilai_j = koin_j.difficulty
+                nilai_min = koin_min.total_network_hash
+                nilai_j = koin_j.total_network_hash
                 
                 if berdasarkan == 'reward':
                     nilai_min = koin_min.reward
@@ -119,8 +158,8 @@ class MiningEngine:
             koin_kunci = self.koleksi_koin[i]
             
             nilai_kunci = koin_kunci.reward
-            if berdasarkan == 'difficulty':
-                nilai_kunci = koin_kunci.difficulty
+            if berdasarkan == 'total_network_hash':
+                nilai_kunci = koin_kunci.total_network_hash
                 
             j = i - 1
             sedang_geser = True
@@ -129,8 +168,8 @@ class MiningEngine:
                 koin_j = self.koleksi_koin[j]
                 
                 nilai_j = koin_j.reward
-                if berdasarkan == 'difficulty':
-                    nilai_j = koin_j.difficulty
+                if berdasarkan == 'total_network_hash':
+                    nilai_j = koin_j.total_network_hash
                     
                 if nilai_j > nilai_kunci:
                     self.koleksi_koin[j + 1] = self.koleksi_koin[j]
