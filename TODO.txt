@@ -3,6 +3,7 @@ BLOM JADI:
 - [ ] fitur search cuma nampilin 1 koin doang FIX INI
 - [ ] sorting masih bingung mau yang mana binary search, yang mana yang insertion(rombak ntar)
 - [ ] grafiknya belum dihubungin FIX INI JUGA
+- [ ] api coingecko belom work [FIX BESOK]
 
 GANTI:
 - [x] difficulty ganti ke total network hash, hapus power consumtion di bagian coin.
