@@ -11,3 +11,6 @@ GANTI:
 BUAT:
 - [ ] buat sorting kolom nama, block reward, total network hash.
 - [x] tambah pop up delete buat konfirmasi + cari cara biar program ga dwnload data lagi
+
+personal todo:
+- [ ] baca ulang keseluruhan kode
