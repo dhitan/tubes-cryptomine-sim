@@ -1,38 +1,79 @@
 import requests
+import json
+import os
 
 class CryptoAsset:
-    def __init__(self, nama, simbol, algoritma, total_network_hash, reward, block_time):
+    def __init__(self, nama, simbol, algoritma, difficulty, reward, block_time, power_consumption):
         self.nama = nama
         self.simbol = simbol
         self.algoritma = algoritma
-        self.total_network_hash = total_network_hash
+        self.difficulty = difficulty
         self.reward = reward
         self.block_time = block_time
+        self.power_consumption = power_consumption
 
 class MiningEngine:
     def __init__(self):
-        self.maksimal_koin = 100
-        self.koleksi_koin = [None] * self.maksimal_koin
-        self.jumlah_koin = 0
+        self.koleksi_koin = []
+        self.data_file = "data.json"
+        self.load_data()
+
+    def load_data(self):
+        if os.path.exists(self.data_file):
+            try:
+                with open(self.data_file, 'r') as f:
+                    data_list = json.load(f)
+                    self.koleksi_koin = [CryptoAsset.from_dict(d) for d in data_list]
+                return
+            except Exception as e:
+                print("Gagal memuat data dari JSON:", e)
+        
+        self.get_data_coingecko()
+        self.save_data()
+
+    def save_data(self):
+        try:
+            with open(self.data_file, 'w') as f:
+                json.dump([koin.to_dict() for koin in self.koleksi_koin], f, indent=4)
+        except Exception as e:
+            print("Gagal menyimpan data ke JSON:", e)
+
+    def add_coin(self, koin):
+        self.koleksi_koin.append(koin)
+        self.save_data()
+
+    def update_coin(self, koin_lama, koin_baru):
+        for i, k in enumerate(self.koleksi_koin):
+            if k == koin_lama:
+                self.koleksi_koin[i] = koin_baru
+                break
+        self.save_data()
+
+    def delete_coin(self, koin):
+        if koin in self.koleksi_koin:
+            self.koleksi_koin.remove(koin)
+            self.save_data()
 
     def get_data_coingecko(self):
         url = "https://api.coingecko.com/api/v3/coins/markets"
         params = {
             "vs_currency": "usd",
             "order": "market_cap_desc",
-            "per_page": 10,
+            "per_page": 10, 
             "page": 1
         }
+        
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
         }
+        
         try:
             response = requests.get(url, params=params, headers=headers)
             data = response.json()
+            
             if type(data) == list:
                 i = 0
                 banyak_data = len(data)
-                self.jumlah_koin = 0
                 while i < banyak_data:
                     item = data[i]
                     nama_koin = item['name']
@@ -40,130 +81,101 @@ class MiningEngine:
                     algo = "SHA-256"
                     total_network_hash = item['market_cap_rank'] * 5000
                     rew = item['current_price'] * 0.05
-                    wkt_blok = 600
+                    wkt_blok = 600 
                     
                     koin_baru = CryptoAsset(nama_koin, simbol_koin, algo, total_network_hash, rew, wkt_blok)
-                    if self.jumlah_koin < self.maksimal_koin:
-                        self.koleksi_koin[self.jumlah_koin] = koin_baru
-                        self.jumlah_koin = self.jumlah_koin + 1
+                    self.koleksi_koin.append(koin_baru)
                     i = i + 1
             else:
-                print("Kena limit dari API: " + str(data))
+                print("Kena limit/blokir dari API CoinGecko nih: " + str(data))
+                
         except Exception as e:
-            print("Gagal get data API: " + str(e))
-
-    def hapus_data_koin(self, koin_target):
-        i = 0
-        ketemu = False
-        while i < self.jumlah_koin and ketemu == False:
-            if self.koleksi_koin[i] == koin_target:
-                ketemu = True
-                j = i
-                while j < self.jumlah_koin - 1:
-                    self.koleksi_koin[j] = self.koleksi_koin[j + 1]
-                    j = j + 1
-                self.koleksi_koin[self.jumlah_koin - 1] = None
-                self.jumlah_koin = self.jumlah_koin - 1
-            i = i + 1
+            print("Waduh, gagal get data API nih ngab: " + str(e))
 
     def hitung_estimasi_mining(self, koin, hashrate_user):
         estimasi_waktu = koin.total_network_hash / (hashrate_user + 1)
-        daya_watt = hashrate_user * 1.5
+        daya_watt = hashrate_user * 1.5 
         return estimasi_waktu, daya_watt
 
     def cari_sequential(self, nama_target):
+        jumlah_koin = len(self.koleksi_koin)
         i = 0
-        ketemu = False
-        hasil_pencarian = None
-        while i < self.jumlah_koin and ketemu == False:
+        while i < jumlah_koin:
             koin_sekarang = self.koleksi_koin[i]
             if koin_sekarang.nama.lower() == nama_target.lower():
-                hasil_pencarian = koin_sekarang
-                ketemu = True
+                return koin_sekarang
             i = i + 1
-        return hasil_pencarian
+        return None
 
     def cari_binary(self, nama_target):
         kiri = 0
-        kanan = self.jumlah_koin - 1
-        ketemu = False
-        hasil_pencarian = None
-        while kiri <= kanan and ketemu == False:
+        kanan = len(self.koleksi_koin) - 1
+        
+        while kiri <= kanan:
             tengah = (kiri + kanan) // 2
             koin_tengah = self.koleksi_koin[tengah]
+            
             if koin_tengah.nama.lower() == nama_target.lower():
-                hasil_pencarian = koin_tengah
-                ketemu = True
+                return koin_tengah
+            
+            if koin_tengah.nama.lower() < nama_target.lower():
+                kiri = tengah + 1
             else:
-                if koin_tengah.nama.lower() < nama_target.lower():
-                    kiri = tengah + 1
-                else:
-                    kanan = tengah - 1
-        return hasil_pencarian
+                kanan = tengah - 1
+                
+        return None
 
-    def urutkan_selection(self, berdasarkan='total_network_hash', urutan='Smallest'):
+    def urutkan_selection(self, berdasarkan='total_network_hash'):
+        jumlah = len(self.koleksi_koin)
         i = 0
-        while i < self.jumlah_koin - 1:
-            indeks_terpilih = i
+        while i < jumlah - 1:
+            indeks_minimum = i
             j = i + 1
-            while j < self.jumlah_koin:
-                koin_pilih = self.koleksi_koin[indeks_terpilih]
+            while j < jumlah:
+                koin_min = self.koleksi_koin[indeks_minimum]
                 koin_j = self.koleksi_koin[j]
                 
-                nilai_pilih = koin_pilih.total_network_hash
+                nilai_min = koin_min.total_network_hash
                 nilai_j = koin_j.total_network_hash
                 
                 if berdasarkan == 'reward':
-                    nilai_pilih = koin_pilih.reward
+                    nilai_min = koin_min.reward
                     nilai_j = koin_j.reward
-                elif berdasarkan == 'nama':
-                    nilai_pilih = koin_pilih.nama.lower()
-                    nilai_j = koin_j.nama.lower()
-                
-                if urutan == 'Smallest':
-                    if nilai_j < nilai_pilih:
-                        indeks_terpilih = j
-                else:
-                    if nilai_j > nilai_pilih:
-                        indeks_terpilih = j
+                    
+                if nilai_j < nilai_min:
+                    indeks_minimum = j
                 j = j + 1
+                
             temp = self.koleksi_koin[i]
-            self.koleksi_koin[i] = self.koleksi_koin[indeks_terpilih]
-            self.koleksi_koin[indeks_terpilih] = temp
+            self.koleksi_koin[i] = self.koleksi_koin[indeks_minimum]
+            self.koleksi_koin[indeks_minimum] = temp
             i = i + 1
 
-    def urutkan_insertion(self, berdasarkan='reward', urutan='Smallest'):
+    def urutkan_insertion(self, berdasarkan='reward'):
+        jumlah = len(self.koleksi_koin)
         i = 1
-        while i < self.jumlah_koin:
+        while i < jumlah:
             koin_kunci = self.koleksi_koin[i]
+            
             nilai_kunci = koin_kunci.reward
             if berdasarkan == 'total_network_hash':
                 nilai_kunci = koin_kunci.total_network_hash
-            elif berdasarkan == 'nama':
-                nilai_kunci = koin_kunci.nama.lower()
                 
             j = i - 1
             sedang_geser = True
-            while j >= 0 and sedang_geser == True:
+            
+            while j >= 0 and sedang_geser:
                 koin_j = self.koleksi_koin[j]
+                
                 nilai_j = koin_j.reward
                 if berdasarkan == 'total_network_hash':
                     nilai_j = koin_j.total_network_hash
-                elif berdasarkan == 'nama':
-                    nilai_j = koin_j.nama.lower()
-                
-                harus_geser = False
-                if urutan == 'Smallest':
-                    if nilai_j > nilai_kunci:
-                        harus_geser = True
-                else:
-                    if nilai_j < nilai_kunci:
-                        harus_geser = True
-                        
-                if harus_geser == True:
+                    
+                if nilai_j > nilai_kunci:
                     self.koleksi_koin[j + 1] = self.koleksi_koin[j]
                     j = j - 1
                 else:
                     sedang_geser = False
+                    
             self.koleksi_koin[j + 1] = koin_kunci
             i = i + 1
