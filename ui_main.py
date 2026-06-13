@@ -802,7 +802,7 @@ class Ui_Form(object):
     # setupUi
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QCoreApplication.translate("Form", u"Form", None))
+        Form.setWindowTitle(QCoreApplication.translate("Form", u"Kishar Terminal", None))
         self.label.setText(QCoreApplication.translate("Form", u"Kishar Terminal", None))
         self.label_49.setText(QCoreApplication.translate("Form", u"Crypto Mining Simulations", None))
         self.label_6.setText(QCoreApplication.translate("Form", u"Possble reward", None))
