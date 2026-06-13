@@ -2,15 +2,39 @@ import requests
 import json
 import os
 
+
+
 class CryptoAsset:
-    def __init__(self, nama, simbol, algoritma, difficulty, reward, block_time, power_consumption):
+    def __init__(self, nama, simbol, algoritma, total_network_hash, block_reward, block_time):
         self.nama = nama
         self.simbol = simbol
         self.algoritma = algoritma
-        self.difficulty = difficulty
-        self.reward = reward
+        self.total_network_hash = total_network_hash
+        self.block_reward = block_reward
         self.block_time = block_time
-        self.power_consumption = power_consumption
+        
+
+    def to_dict(self):
+        return {
+            'nama': self.nama,
+            'simbol': self.simbol,
+            'algoritma': self.algoritma,
+            'total_network_hash': self.total_network_hash,
+            'block_reward': self.block_reward,
+            'block_time': self.block_time
+        }
+
+# serialization
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            nama=data.get('nama', ''),
+            simbol=data.get('simbol', ''),
+            algoritma=data.get('algoritma', ''),
+            total_network_hash=data.get('total_network_hash', 0),
+            block_reward=data.get('block_reward', 0),
+            block_time=data.get('block_time', 0)
+        )
 
 class MiningEngine:
     def __init__(self):
@@ -138,9 +162,9 @@ class MiningEngine:
                 nilai_min = koin_min.total_network_hash
                 nilai_j = koin_j.total_network_hash
                 
-                if berdasarkan == 'reward':
-                    nilai_min = koin_min.reward
-                    nilai_j = koin_j.reward
+                if berdasarkan == 'block_reward':
+                    nilai_min = koin_min.block_reward
+                    nilai_j = koin_j.block_reward
                     
                 if nilai_j < nilai_min:
                     indeks_minimum = j
@@ -151,13 +175,13 @@ class MiningEngine:
             self.koleksi_koin[indeks_minimum] = temp
             i = i + 1
 
-    def urutkan_insertion(self, berdasarkan='reward'):
+    def urutkan_insertion(self, berdasarkan='block_reward'):
         jumlah = len(self.koleksi_koin)
         i = 1
         while i < jumlah:
             koin_kunci = self.koleksi_koin[i]
             
-            nilai_kunci = koin_kunci.reward
+            nilai_kunci = koin_kunci.block_reward
             if berdasarkan == 'total_network_hash':
                 nilai_kunci = koin_kunci.total_network_hash
                 
@@ -167,7 +191,7 @@ class MiningEngine:
             while j >= 0 and sedang_geser:
                 koin_j = self.koleksi_koin[j]
                 
-                nilai_j = koin_j.reward
+                nilai_j = koin_j.block_reward
                 if berdasarkan == 'total_network_hash':
                     nilai_j = koin_j.total_network_hash
                     
