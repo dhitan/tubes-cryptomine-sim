@@ -3,13 +3,13 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPush
 from ui_main import Ui_Form
 from main_engine import MiningEngine, CryptoAsset
 
+
+
 class CoinFormDialog(QDialog):
     def __init__(self, parent=None, coin=None):
         super().__init__(parent)
         self.setWindowTitle("Form Aset Kripto")
-        
         self.layout = QFormLayout(self)
-        
         self.nama_input = QLineEdit(self)
         self.simbol_input = QLineEdit(self)
         self.hash_input = QLineEdit(self)
@@ -44,7 +44,7 @@ class CoinFormDialog(QDialog):
             'simbol': self.simbol_input.text(),
             'total_network_hash': self.hash_input.text(),
             'algoritma': self.algo_input.text(),
-            'reward': self.reward_input.text(),
+            'block_reward': self.reward_input.text(),
             'block_time': self.time_input.text()
         }
 
@@ -53,24 +53,32 @@ class Kishar(QWidget):
         super().__init__()
         self.ui = Ui_Form()
         self.ui.setupUi(self)
-        self.engine = MiningEngine()
+        self.ui.tabWidget.setCurrentIndex(0)
         
+        # hide semua fitur ga wajib :)
+        # gasempet
+        self.ui.frame_14.hide()
+        self.ui.frame_15.hide()
+        self.ui.frame_16.hide()
+        self.ui.frame_2.hide()
+        
+        self.engine = MiningEngine()
         self.ui.tableWidget.setColumnCount(7)
         self.ui.tableWidget.setHorizontalHeaderLabels([
             "Nama", "Simbol", "Total Network Hash", "Algoritma", "Block Reward", "Block Time(det)", "Aksi"
         ])
-        
         self.render_tableWidget()
-
         self.ui.lineEdit.textChanged.connect(self.search)
         self.ui.pushButton_4.clicked.connect(self.addCoin)
         self.ui.comboBox.currentTextChanged.connect(self.main_sort)
         
-        self.ui.pushButton.clicked.connect(self.show_chart)
+        self.ui.pushButton.clicked.connect(self.show_about)
+
+    def show_about(self):
+        QMessageBox.information(self, "About", "Aplikasi Simulasi Mining Crypto\nTugas Besar Alpro")
 
     def render_tableWidget(self):
         self.ui.tableWidget.setRowCount(0)
-        
         baris = 0
         
         for koin in self.engine.koleksi_koin:
@@ -78,7 +86,7 @@ class Kishar(QWidget):
             
             atribut_koin = [
                 koin.nama, koin.simbol, koin.total_network_hash, 
-                koin.algoritma, koin.reward, koin.block_time
+                koin.algoritma, koin.block_reward, koin.block_time
             ]
             
             for kolom, nilai in enumerate(atribut_koin):
@@ -146,7 +154,7 @@ class Kishar(QWidget):
                 self.ui.tableWidget.insertRow(0)
                 atribut_koin = [
                     hasil.nama, hasil.simbol, hasil.total_network_hash, 
-                    hasil.algoritma, hasil.reward, hasil.block_time
+                    hasil.algoritma, hasil.block_reward, hasil.block_time
                 ]
                 for kolom, nilai in enumerate(atribut_koin):
                     item = QTableWidgetItem(str(nilai))
@@ -168,7 +176,7 @@ class Kishar(QWidget):
         i = 0
         while i < len(self.engine.koleksi_koin):
             nama_koin.append(self.engine.koleksi_koin[i].simbol)
-            harga_koin.append(self.engine.koleksi_koin[i].reward)
+            harga_koin.append(self.engine.koleksi_koin[i].block_reward)
             i = i + 1
             
         plt.bar(nama_koin, harga_koin)
