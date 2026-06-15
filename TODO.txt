@@ -1,7 +1,7 @@
 BLOM JADI:
 - [x] edit button pop up
 - [ ] fitur search cuma nampilin 1 koin doang FIX INI(tugasnya ghfron)
-- [ ] sorting masih bingung mau yang mana binary search, yang mana yang insertion - 
+- [x] sorting masih bingung mau yang mana binary search, yang mana yang insertion - 
 - [X] grafiknya belum dihubungin FIX INI JUGA > jadinya hide graph(gabakalsempet)
 - [X] api coingecko belom work [FIX BESOK] > fixed
 - [X] benerin funct cryptasset. kurang 1 argumen > fixed
@@ -10,7 +10,7 @@ GANTI:
 - [x] difficulty ganti ke total network hash, hapus power consumtion di bagian coin.
 
 BUAT:
-- [ ] buat sorting kolom nama, block reward, total network hash.
+- [x] buat sorting kolom nama, block reward, total network hash.
 - [x] tambah pop up delete buat konfirmasi + cari cara biar program ga dwnload data lagi
 
 personal todo:

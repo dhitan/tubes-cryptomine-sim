@@ -6,46 +6,46 @@ from main_engine import MiningEngine, CryptoAsset
 
 
 class CoinFormDialog(QDialog):
-    def __init__(self, parent=None, coin=None):
-        super().__init__(parent)
-        self.setWindowTitle("Form Aset Kripto")
-        self.layout = QFormLayout(self)
-        self.nama_input = QLineEdit(self)
-        self.simbol_input = QLineEdit(self)
-        self.hash_input = QLineEdit(self)
-        self.algo_input = QLineEdit(self)
-        self.reward_input = QLineEdit(self)
-        self.time_input = QLineEdit(self)
+    def __init__(self, induk=None, koin=None):
+        super().__init__(induk)
+        self.setWindowTitle("form data kripto")
+        self.tata_letak = QFormLayout(self)
+        self.i_nama = QLineEdit(self)
+        self.i_simbol = QLineEdit(self)
+        self.i_hash = QLineEdit(self)
+        self.i_algo = QLineEdit(self)
+        self.i_hadiah = QLineEdit(self)
+        self.i_waktu = QLineEdit(self)
         
-        if coin:
-            self.nama_input.setText(coin.nama)
-            self.simbol_input.setText(coin.simbol)
-            self.hash_input.setText(str(coin.total_network_hash))
-            self.algo_input.setText(coin.algoritma)
-            self.reward_input.setText(str(coin.reward))
-            self.time_input.setText(str(coin.block_time))
+        if koin:
+            self.i_nama.setText(koin.nama)
+            self.i_simbol.setText(koin.simbol)
+            self.i_hash.setText(str(koin.total_network_hash))
+            self.i_algo.setText(koin.algoritma)
+            self.i_hadiah.setText(str(koin.block_reward))
+            self.i_waktu.setText(str(koin.block_time))
             
-        self.layout.addRow("Nama:", self.nama_input)
-        self.layout.addRow("Simbol:", self.simbol_input)
-        self.layout.addRow("Total Network Hash:", self.hash_input)
-        self.layout.addRow("Algoritma:", self.algo_input)
-        self.layout.addRow("Block Reward:", self.reward_input)
-        self.layout.addRow("Block Time (detik):", self.time_input)
+        self.tata_letak.addRow("nama:", self.i_nama)
+        self.tata_letak.addRow("simbol:", self.i_simbol)
+        self.tata_letak.addRow("hash:", self.i_hash)
+        self.tata_letak.addRow("algo:", self.i_algo)
+        self.tata_letak.addRow("hadiah:", self.i_hadiah)
+        self.tata_letak.addRow("waktu:", self.i_waktu)
         
-        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        self.buttons.accepted.connect(self.accept)
-        self.buttons.rejected.connect(self.reject)
+        self.tombol = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+        self.tombol.accepted.connect(self.accept)
+        self.tombol.rejected.connect(self.reject)
         
-        self.layout.addRow(self.buttons)
+        self.tata_letak.addRow(self.tombol)
         
     def get_data(self):
         return {
-            'nama': self.nama_input.text(),
-            'simbol': self.simbol_input.text(),
-            'total_network_hash': self.hash_input.text(),
-            'algoritma': self.algo_input.text(),
-            'block_reward': self.reward_input.text(),
-            'block_time': self.time_input.text()
+            'nama': self.i_nama.text(),
+            'simbol': self.i_simbol.text(),
+            'total_network_hash': self.i_hash.text(),
+            'algoritma': self.i_algo.text(),
+            'block_reward': self.i_hadiah.text(),
+            'block_time': self.i_waktu.text()
         }
 
 class Kishar(QWidget):
@@ -55,12 +55,19 @@ class Kishar(QWidget):
         self.ui.setupUi(self)
         self.ui.tabWidget.setCurrentIndex(0)
         
-        # hide semua fitur ga wajib :)
-        # gasempet
         self.ui.frame_14.hide()
         self.ui.frame_15.hide()
         self.ui.frame_16.hide()
         self.ui.frame_2.hide()
+        
+        self.ui.comboBox.clear()
+        self.ui.comboBox.addItem("Total Network Hash")
+        self.ui.comboBox.addItem("Block Reward")
+        self.ui.comboBox.addItem("Nama")
+        
+        self.ui.comboBox_2.clear()
+        self.ui.comboBox_2.addItem("Ascending")
+        self.ui.comboBox_2.addItem("Descending")
         
         self.engine = MiningEngine()
         self.ui.tableWidget.setColumnCount(7)
@@ -71,8 +78,11 @@ class Kishar(QWidget):
         self.ui.lineEdit.textChanged.connect(self.search)
         self.ui.pushButton_4.clicked.connect(self.addCoin)
         self.ui.comboBox.currentTextChanged.connect(self.main_sort)
+        self.ui.comboBox_2.currentTextChanged.connect(self.main_sort)
         
         self.ui.pushButton.clicked.connect(self.show_about)
+        self.ui.pushButton_6.clicked.connect(self.ekspor_data)
+        self.ui.pushButton_2.clicked.connect(self.gas_hitung)
 
     def show_about(self):
         QMessageBox.information(self, "About", "Aplikasi Simulasi Mining Crypto\nTugas Besar Alpro")
@@ -80,21 +90,26 @@ class Kishar(QWidget):
     def render_tableWidget(self):
         self.ui.tableWidget.setRowCount(0)
         baris = 0
+        i = 0
         
-        for koin in self.engine.koleksi_koin:
+        while i < self.engine.jumlah_koin:
+            koin = self.engine.koleksi_koin[i]
             self.ui.tableWidget.insertRow(baris)
             
-            atribut_koin = [
+            atribut = [
                 koin.nama, koin.simbol, koin.total_network_hash, 
                 koin.algoritma, koin.block_reward, koin.block_time
             ]
             
-            for kolom, nilai in enumerate(atribut_koin):
-                item = QTableWidgetItem(str(nilai))
+            kolom = 0
+            while kolom < 6:
+                item = QTableWidgetItem(str(atribut[kolom]))
                 self.ui.tableWidget.setItem(baris, kolom, item)
+                kolom = kolom + 1
             
             self.btn_table_action(baris, koin)
             baris = baris + 1
+            i = i + 1
 
     def btn_table_action(self, baris, koin):
         widget_aksi = QWidget()
@@ -118,56 +133,63 @@ class Kishar(QWidget):
         self.ui.tableWidget.setCellWidget(baris, kolom_aksi, widget_aksi)
 
     def addCoin(self):
-        dialog = CoinFormDialog(self)
-        if dialog.exec():
-            data = dialog.get_data()
-            koin_baru = CryptoAsset(data['nama'], data['simbol'], data['algoritma'], 
-                                    float(data['total_network_hash']), float(data['reward']), float(data['block_time']))
-            self.engine.add_coin(koin_baru)
+        layar = CoinFormDialog(self)
+        if layar.exec():
+            isi = layar.get_data()
+            k_baru = CryptoAsset(isi['nama'], isi['simbol'], isi['algoritma'], float(isi['total_network_hash']), float(isi['block_reward']), float(isi['block_time']))
+            self.engine.add_coin(k_baru)
             self.render_tableWidget()
 
-    def editCoin(self, koin):
-        dialog = CoinFormDialog(self, koin)
-        if dialog.exec():
-            data = dialog.get_data()
-            koin_baru = CryptoAsset(data['nama'], data['simbol'], data['algoritma'], 
-                                    float(data['total_network_hash']), float(data['reward']), float(data['block_time']))
-            self.engine.update_coin(koin, koin_baru)
+    def editCoin(self, target):
+        layar = CoinFormDialog(self, target)
+        if layar.exec():
+            isi = layar.get_data()
+            k_baru = CryptoAsset(isi['nama'], isi['simbol'], isi['algoritma'], float(isi['total_network_hash']), float(isi['block_reward']), float(isi['block_time']))
+            self.engine.update_coin(target, k_baru)
             self.render_tableWidget()
 
-    def delCoin(self, koin):
-        reply = QMessageBox.question(self, 'Konfirmasi Hapus', f"Apakah kamu yakin ingin menghapus {koin.nama}?",
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            self.engine.delete_coin(koin)
+    def delCoin(self, target):
+        tanya = QMessageBox.question(self, 'awas', "yakin mau buang " + str(target.nama) + "?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if tanya == QMessageBox.Yes:
+            self.engine.delete_coin(target)
             self.render_tableWidget()
 
     def search(self, teks):
         if teks == "":
-            self.engine.koleksi_koin.clear()
-            self.engine.load_data()
             self.render_tableWidget()
         else:
-            hasil = self.engine.cari_sequential(teks)
+            kumpulan, banyak = self.engine.cari_sequential(teks)
             self.ui.tableWidget.setRowCount(0)
-            if hasil != None:
-                self.ui.tableWidget.insertRow(0)
-                atribut_koin = [
-                    hasil.nama, hasil.simbol, hasil.total_network_hash, 
-                    hasil.algoritma, hasil.block_reward, hasil.block_time
+            baris = 0
+            i = 0
+            while i < banyak:
+                k = kumpulan[i]
+                self.ui.tableWidget.insertRow(baris)
+                atribut = [
+                    k.nama, k.simbol, k.total_network_hash, 
+                    k.algoritma, k.block_reward, k.block_time
                 ]
-                for kolom, nilai in enumerate(atribut_koin):
-                    item = QTableWidgetItem(str(nilai))
-                    self.ui.tableWidget.setItem(0, kolom, item)
+                kolom = 0
+                while kolom < 6:
+                    item = QTableWidgetItem(str(atribut[kolom]))
+                    self.ui.tableWidget.setItem(baris, kolom, item)
+                    kolom = kolom + 1
+                self.btn_table_action(baris, k)
+                baris = baris + 1
+                i = i + 1
 
-    def main_sort(self, teks):
-        if teks == "Difficulty":
-            self.engine.urutkan_selection("total_network_hash")
-        elif teks == "Block Reward":
-            self.engine.urutkan_insertion("reward")
+    def main_sort(self, buang_aja):
+        kat = self.ui.comboBox.currentText()
+        arh = self.ui.comboBox_2.currentText()
+
+        if kat == "Total Network Hash":
+            self.engine.urutkan_selection("total_network_hash", arh)
+        elif kat == "Block Reward":
+            self.engine.urutkan_insertion("block_reward", arh)
+        elif kat == "Nama":
+            self.engine.urutkan_selection("nama", arh)
             
         self.render_tableWidget()
-        self.show_chart()
 
     def show_chart(self):
         import matplotlib.pyplot as plt
@@ -181,6 +203,28 @@ class Kishar(QWidget):
             
         plt.bar(nama_koin, harga_koin)
         plt.show()
+    
+    def ekspor_data(self):
+        self.engine.bikin_csv()
+        QMessageBox.information(self, "mantap", "laporan udah jadi csv")
+
+    def gas_hitung(self):
+        n_mentah = self.ui.comboBox_3.currentText()
+        n = n_mentah.split(" ")[0]
+        
+        h = float(self.ui.lineEdit_2.text())
+        t = float(self.ui.lineEdit_4.text())
+        
+        k = self.engine.cari_sequential(n)
+        
+        if k != None:
+            b, kr, p, l, u, bm = self.engine.hitung_roi(h, k.total_network_hash, k.block_time, k.block_reward, 15000, 120, t, 15000000)
+            
+            self.ui.label_63.setText(str(b))
+            self.ui.label_65.setText(str(kr))
+            self.ui.label_69.setText(str(l))
+            self.ui.label_72.setText(str(p))
+            self.ui.label_74.setText(str(u))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
