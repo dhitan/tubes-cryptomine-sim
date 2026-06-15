@@ -5,13 +5,14 @@ import os
 
 
 class CryptoAsset:
-    def __init__(self, nama, simbol, algoritma, total_network_hash, block_reward, block_time):
+    def __init__(self, nama, simbol, algoritma, total_network_hash, block_reward, block_time, harga=0.0):
         self.nama = nama
         self.simbol = simbol
         self.algoritma = algoritma
         self.total_network_hash = total_network_hash
         self.block_reward = block_reward
         self.block_time = block_time
+        self.harga = harga # harga koin dalam rupiah
         
 
     def to_dict(self):
@@ -21,7 +22,8 @@ class CryptoAsset:
             'algoritma': self.algoritma,
             'total_network_hash': self.total_network_hash,
             'block_reward': self.block_reward,
-            'block_time': self.block_time
+            'block_time': self.block_time,
+            'harga': self.harga
         }
 
 # serialization
@@ -33,7 +35,8 @@ class CryptoAsset:
             algoritma=data.get('algoritma', ''),
             total_network_hash=data.get('total_network_hash', 0),
             block_reward=data.get('block_reward', 0),
-            block_time=data.get('block_time', 0)
+            block_time=data.get('block_time', 0),
+            harga=data.get('harga', 0.0)
         )
 
 class MiningEngine:
@@ -44,36 +47,40 @@ class MiningEngine:
         self.get_data_coingecko()
 
     def get_data_coingecko(self):
-        u = "https://api.coingecko.com/api/v3/coins/markets"
-        p = {"vs_currency": "usd", "order": "market_cap_desc", "per_page": 10, "page": 1}
+        # hardcode list coin pow (tnh, reward, waktu)
+        daftar_koin = [
+            {"id": "bitcoin", "n": "Bitcoin", "s": "BTC", "a": "SHA-256", "hash": 600e18, "rew": 3.125, "wkt": 600},
+            {"id": "dogecoin", "n": "Dogecoin", "s": "DOGE", "a": "Scrypt", "hash": 1e15, "rew": 10000, "wkt": 60},
+            {"id": "litecoin", "n": "Litecoin", "s": "LTC", "a": "Scrypt", "hash": 1e15, "rew": 6.25, "wkt": 150},
+            {"id": "monero", "n": "Monero", "s": "XMR", "a": "RandomX", "hash": 2.5e9, "rew": 0.6, "wkt": 120},
+            {"id": "ethereum-classic", "n": "Ethereum Classic", "s": "ETC", "a": "Etchash", "hash": 150e12, "rew": 2.56, "wkt": 13},
+            {"id": "ravencoin", "n": "Ravencoin", "s": "RVN", "a": "KawPow", "hash": 6e12, "rew": 2500, "wkt": 60}
+        ]
+        
+        # ambil harga real dari coingecko
+        ids = ",".join([k["id"] for k in daftar_koin])
+        u = "https://api.coingecko.com/api/v3/simple/price"
+        p = {"ids": ids, "vs_currencies": "idr"}
         h = {'User-Agent': 'Mozilla/5.0'}
         
+        harga_koin = {}
         try:
             res = requests.get(u, params=p, headers=h)
-            d = res.json()
-            
-            if type(d) == list:
-                i = 0
-                byk = len(d)
-                self.jumlah_koin = 0
-                while i < byk:
-                    brg = d[i]
-                    n = brg['name']
-                    s = brg['symbol'].upper()
-                    a = "SHA-256"
-                    hash_val = brg['market_cap_rank'] * 5000
-                    rew = brg['current_price'] * 0.05
-                    wkt = 600
-                    
-                    k_baru = CryptoAsset(n, s, a, hash_val, rew, wkt)
-                    if self.jumlah_koin < self.maksimal:
-                        self.koleksi_koin[self.jumlah_koin] = k_baru
-                        self.jumlah_koin = self.jumlah_koin + 1
-                    i = i + 1
-            else:
-                print("kena limit")
+            harga_koin = res.json()
         except Exception as e:
-            print("gagal ambil data")
+            print("gagal ambil harga dari coingecko, memakai harga default")
+            
+        self.jumlah_koin = 0
+        for k_data in daftar_koin:
+            # cari harga di response json, kalau tidak ada set default 1000
+            harga_idr = 1000
+            if k_data["id"] in harga_koin and "idr" in harga_koin[k_data["id"]]:
+                harga_idr = harga_koin[k_data["id"]]["idr"]
+                
+            k_baru = CryptoAsset(k_data["n"], k_data["s"], k_data["a"], k_data["hash"], k_data["rew"], k_data["wkt"], harga_idr)
+            if self.jumlah_koin < self.maksimal:
+                self.koleksi_koin[self.jumlah_koin] = k_baru
+                self.jumlah_koin = self.jumlah_koin + 1
 
     def add_coin(self, koin_baru):
         if self.jumlah_koin < self.maksimal:
@@ -214,13 +221,30 @@ class MiningEngine:
             self.koleksi_koin[j + 1] = k_kunci
             i = i + 1
     
-    def hitung_roi(self, hm, hn, tb, r, hrg, w, kwh, hw):
-        b = 86400 / tb
+    def hitung_roi(self, hm, hn, tb, r, hrg, w, kwh, hw, durasi):
+        # Menghitung total waktu (detik) dari input durasi (jam)
+        total_detik = 3600 * durasi
+        
+        # b = jumlah block yang berhasil didapat jaringan selama durasi tersebut
+        b = total_detik / tb
+        
+        # kr = (hashrate kita / hashrate jaringan) * total block * reward per block
+        # Ini adalah estimasi koin yang kita dapatkan
         kr = (hm / hn) * b * r
+        
+        # k = pendapatan kotor (koin dikali harga per koin dalam kurs)
         k = kr * hrg
-        l = ((w * 24) / 1000) * kwh
+        
+        # e = konsumsi energi dalam kWh (watt * jam dibagi 1000)
+        e = (w * durasi) / 1000
+        
+        # l = total biaya listrik (konsumsi energi kWh dikali tarif dasar listrik)
+        l = e * kwh
+        
+        # u = profit bersih (pendapatan kotor dikurangi biaya listrik)
         u = k - l
         
+        # bm = break even point (kapan modal alat balik)
         if u <= 0:
             bm = 999999
             print("rugi bandar")
@@ -228,7 +252,7 @@ class MiningEngine:
             bm = hw / u
             print("cuan")
             
-        return b, kr, k, l, u, bm
+        return b, kr, k, e, l, u, bm
 
     def bikin_csv(self):
         f = open("laporan.csv", "w")

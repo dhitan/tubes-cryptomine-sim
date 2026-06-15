@@ -803,8 +803,8 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         Form.setWindowTitle(QCoreApplication.translate("Form", u"Kishar Terminal", None))
-        self.label.setText(QCoreApplication.translate("Form", u"Kishar Terminal", None))
-        self.label_49.setText(QCoreApplication.translate("Form", u"Crypto Mining Simulations", None))
+        self.label.setText(QCoreApplication.translate("Form", u"[⚠] PERHATIAN, DATA TNH TERAKHIR UPDATE 16/06/2026", None))
+        self.label_49.setText(QCoreApplication.translate("Form", u"Silahkan update data total network hashrate per hari ini sesuai dengan koin pilihan masing-masing", None))
         self.label_6.setText(QCoreApplication.translate("Form", u"Possble reward", None))
         self.label_7.setText(QCoreApplication.translate("Form", u"REWARDDATA", None))
         self.label_4.setText(QCoreApplication.translate("Form", u"Energy Bill", None))
@@ -895,7 +895,7 @@ class Ui_Form(object):
         self.label_53.setText(QCoreApplication.translate("Form", u"Block Difficulty", None))
         self.label_62.setText(QCoreApplication.translate("Form", u"Sesi mining", None))
         self.label_54.setText(QCoreApplication.translate("Form", u"-----", None))
-        self.label_55.setText(QCoreApplication.translate("Form", u"Hasrate Input (H/s)", None))
+        self.label_55.setText(QCoreApplication.translate("Form", u"Hashrate Input (H/s)", None))
         self.label_56.setText(QCoreApplication.translate("Form", u"-----", None))
         self.label_57.setText(QCoreApplication.translate("Form", u"Durasi (jam)", None))
         self.label_58.setText(QCoreApplication.translate("Form", u"-----", None))
