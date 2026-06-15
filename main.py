@@ -145,7 +145,6 @@ class Kishar(QWidget):
         self.ui.comboBox_2.currentTextChanged.connect(self.main_sort)
         
         self.ui.pushButton.clicked.connect(self.show_about)
-        self.ui.pushButton_6.clicked.connect(self.ekspor_data)
         self.ui.pushButton_2.clicked.connect(self.gas_hitung)
 
     def show_about(self):
@@ -254,23 +253,7 @@ class Kishar(QWidget):
             self.engine.urutkan_selection("nama", arh)
             
         self.render_tableWidget()
-
-    def show_chart(self):
-        import matplotlib.pyplot as plt
-        nama_koin = []
-        harga_koin = []
-        i = 0
-        while i < len(self.engine.koleksi_koin):
-            nama_koin.append(self.engine.koleksi_koin[i].simbol)
-            harga_koin.append(self.engine.koleksi_koin[i].block_reward)
-            i = i + 1
-            
-        plt.bar(nama_koin, harga_koin)
-        plt.show()
     
-    def ekspor_data(self):
-        self.engine.bikin_csv()
-        QMessageBox.information(self, "mantap", "laporan udah jadi csv")
 
     def gas_hitung(self):
         n_mentah = self.ui.comboBox_3.currentText()

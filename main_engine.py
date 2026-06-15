@@ -1,8 +1,4 @@
 import requests
-import json
-import os
-
-
 
 class CryptoAsset:
     def __init__(self, nama, simbol, algoritma, total_network_hash, block_reward, block_time, harga=0.0):
@@ -15,29 +11,6 @@ class CryptoAsset:
         self.harga = harga # harga koin dalam rupiah
         
 
-    def to_dict(self):
-        return {
-            'nama': self.nama,
-            'simbol': self.simbol,
-            'algoritma': self.algoritma,
-            'total_network_hash': self.total_network_hash,
-            'block_reward': self.block_reward,
-            'block_time': self.block_time,
-            'harga': self.harga
-        }
-
-# serialization
-    @classmethod
-    def from_dict(cls, data):
-        return cls(
-            nama=data.get('nama', ''),
-            simbol=data.get('simbol', ''),
-            algoritma=data.get('algoritma', ''),
-            total_network_hash=data.get('total_network_hash', 0),
-            block_reward=data.get('block_reward', 0),
-            block_time=data.get('block_time', 0),
-            harga=data.get('harga', 0.0)
-        )
 
 class MiningEngine:
     def __init__(self):
@@ -110,10 +83,6 @@ class MiningEngine:
                 self.jumlah_koin = self.jumlah_koin - 1
             i = i + 1
 
-    def hitung_estimasi_mining(self, koin, hashrate_user):
-        estimasi_waktu = koin.total_network_hash / (hashrate_user + 1)
-        daya_watt = hashrate_user * 1.5 
-        return estimasi_waktu, daya_watt
 
     def cari_sequential(self, target):
         wadah = [None] * self.maksimal
@@ -148,7 +117,7 @@ class MiningEngine:
         return hasil
 
     def urutkan_selection(self, d, a):
-        byk = len(self.koleksi_koin)
+        byk = self.jumlah_koin
         i = 0
         while i < byk - 1:
             plh = i
@@ -181,7 +150,7 @@ class MiningEngine:
             i = i + 1
 
     def urutkan_insertion(self, d, a):
-        byk = len(self.koleksi_koin)
+        byk = self.jumlah_koin
         i = 1
         while i < byk:
             k_kunci = self.koleksi_koin[i]
@@ -252,19 +221,4 @@ class MiningEngine:
             bm = hw / u
             print("cuan")
             
-        return b, kr, k, e, l, u, bm
-
-    def bikin_csv(self):
-        f = open("laporan.csv", "w")
-        f.write("koin,simbol,hash,algo,hadiah,waktu\n")
-        
-        i = 0
-        banyak = len(self.koleksi_koin)
-        while i < banyak:
-            k = self.koleksi_koin[i]
-            t = str(k.nama) + "," + str(k.simbol) + "," + str(k.total_network_hash) + "," + str(k.algoritma) + "," + str(k.block_reward) + "," + str(k.block_time) + "\n"
-            f.write(t)
-            i = i + 1
-            
-        f.close()
-        print("beres cetak")
+        return b, kr, k, e, l, u, bm

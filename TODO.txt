@@ -5,7 +5,7 @@ BLOM JADI:
 - [X] grafiknya belum dihubungin FIX INI JUGA > jadinya hide graph(gabakalsempet)
 - [X] api coingecko belom work [FIX BESOK] > fixed
 - [X] benerin funct cryptasset. kurang 1 argumen > fixed
-- [ ] gas_hitung tupple error
+- [X] gas_hitung tupple error
 
 GANTI:
 - [x] difficulty ganti ke total network hash, hapus power consumtion di bagian coin.
