@@ -212,13 +212,5 @@ class MiningEngine:
         
         # u = profit bersih (pendapatan kotor dikurangi biaya listrik)
         u = k - l
-        
-        # bm = break even point (kapan modal alat balik)
-        if u <= 0:
-            bm = 999999
-            print("rugi bandar")
-        else:
-            bm = hw / u
-            print("cuan")
             
-        return b, kr, k, e, l, u, bm
+        return b, kr, k, e, l, u

@@ -1,7 +1,7 @@
 import sys
 import csv
 import datetime
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPushButton, QWidget, QHBoxLayout, QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QMessageBox, QAbstractItemView, QLabel
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QPushButton, QWidget, QHBoxLayout, QDialog, QFormLayout, QLineEdit, QDialogButtonBox, QMessageBox, QAbstractItemView, QLabel, QComboBox
 from ui_main import Ui_Form
 from main_engine import MiningEngine, CryptoAsset
 
@@ -139,7 +139,16 @@ class Kishar(QWidget):
         self.ui.pushButton_5.clicked.connect(self.hapus_semua_sesi)
         
         self.render_tableWidget()
+        
+        # dropdown sequental/binsearch
+        self.combo_search = QComboBox()
+        self.combo_search.addItems(["Sequential Search", "Binary Search"])
+        self.ui.horizontalLayout.insertWidget(0, self.combo_search)
+        
+        self.update_combobox_aset()
+        
         self.ui.lineEdit.textChanged.connect(self.search)
+        self.combo_search.currentTextChanged.connect(lambda: self.search(self.ui.lineEdit.text()))
         self.ui.pushButton_4.clicked.connect(self.addCoin)
         self.ui.comboBox.currentTextChanged.connect(self.main_sort)
         self.ui.comboBox_2.currentTextChanged.connect(self.main_sort)
@@ -195,6 +204,14 @@ class Kishar(QWidget):
         kolom_aksi = 6 
         self.ui.tableWidget.setCellWidget(baris, kolom_aksi, widget_aksi)
 
+    def update_combobox_aset(self):
+        self.ui.comboBox_3.clear()
+        i = 0
+        while i < self.engine.jumlah_koin:
+            k = self.engine.koleksi_koin[i]
+            self.ui.comboBox_3.addItem(f"{k.nama} ({k.simbol})")
+            i = i + 1
+
     def addCoin(self):
         layar = CoinFormDialog(self)
         if layar.exec():
@@ -202,6 +219,7 @@ class Kishar(QWidget):
             k_baru = CryptoAsset(isi['nama'], isi['simbol'], isi['algoritma'], float(isi['total_network_hash']), float(isi['block_reward']), float(isi['block_time']))
             self.engine.add_coin(k_baru)
             self.render_tableWidget()
+            self.update_combobox_aset()
 
     def editCoin(self, target):
         layar = CoinFormDialog(self, target)
@@ -210,18 +228,32 @@ class Kishar(QWidget):
             k_baru = CryptoAsset(isi['nama'], isi['simbol'], isi['algoritma'], float(isi['total_network_hash']), float(isi['block_reward']), float(isi['block_time']))
             self.engine.update_coin(target, k_baru)
             self.render_tableWidget()
+            self.update_combobox_aset()
 
     def delCoin(self, target):
         tanya = QMessageBox.question(self, 'awas', "yakin mau buang " + str(target.nama) + "?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if tanya == QMessageBox.Yes:
             self.engine.delete_coin(target)
             self.render_tableWidget()
+            self.update_combobox_aset()
 
     def search(self, teks):
         if teks == "":
             self.render_tableWidget()
         else:
-            kumpulan, banyak = self.engine.cari_sequential(teks)
+            mode = self.combo_search.currentText()
+            
+            if mode == "Sequential Search":
+                kumpulan, banyak = self.engine.cari_sequential(teks)
+            else:
+                hasil = self.engine.cari_binary(teks)
+                if hasil:
+                    kumpulan = [hasil]
+                    banyak = 1
+                else:
+                    kumpulan = []
+                    banyak = 0
+                    
             self.ui.tableWidget.setRowCount(0)
             baris = 0
             i = 0
@@ -282,7 +314,7 @@ class Kishar(QWidget):
         if banyak > 0:
             k = kumpulan[0]
             # Kalkulasi ROI menggunakan k.harga asli dari coingecko
-            b, kr, p, e, l, u, bm = self.engine.hitung_roi(h, k.total_network_hash, k.block_time, k.block_reward, k.harga, w, t, 15000000, durasi)
+            b, kr, p, e, l, u = self.engine.hitung_roi(h, k.total_network_hash, k.block_time, k.block_reward, k.harga, w, t, 15000000, durasi)
             
             # Memasukkan hasil perhitungan ke label UI tanpa notasi ilmiah (scientific notation)
             self.ui.label_63.setText(f"{b:.2f}")            # total block yang didapat
