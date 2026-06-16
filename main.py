@@ -157,7 +157,7 @@ class Kishar(QWidget):
         self.ui.pushButton_2.clicked.connect(self.gas_hitung)
 
     def show_about(self):
-        QMessageBox.information(self, "About", "Aplikasi Simulasi Mining Crypto\nTugas Besar Alpro")
+        QMessageBox.information(self, "About", "Aplikasi Simulasi Mining Crypto\nTugas Besar Alpro Telkom University Surabaya\n- Dhitan Hakim Arendrayuda 108102500027\n- Muhammad Ghufroon 108102530005")
 
     def render_tableWidget(self):
         self.ui.tableWidget.setRowCount(0)
