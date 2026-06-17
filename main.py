@@ -127,6 +127,11 @@ class Kishar(QWidget):
             "Nama", "Simbol", "Total Network Hash", "Algoritma", "Block Reward", "Block Time(det)", "Harga (Rp)", "Aksi"
         ])
         
+        self.ui.tableWidget_2.setColumnCount(12)
+        self.ui.tableWidget_2.setHorizontalHeaderLabels([
+            "Aset", "Simbol", "Hashrate", "Durasi (Jam)", "Est. Reward", "Daya (Watt)", "Energi (kWh)", "Tarif Listrik", "Biaya Listrik", "Pendapatan", "Profit Bersih", "Tanggal"
+        ])
+        
         # inisialisasi daftar sesi laporan
         self.daftar_sesi = []
         self.hasil_terakhir = None
@@ -337,9 +342,12 @@ class Kishar(QWidget):
                 "hashrate": h,
                 "durasi": durasi,
                 "reward": kr,
+                "daya": w,
                 "energi": e,
                 "tarif": t,
                 "total_biaya": l,
+                "pendapatan": p,
+                "profit_bersih": u,
                 "tanggal": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
 
@@ -359,8 +367,8 @@ class Kishar(QWidget):
             self.ui.tableWidget_2.insertRow(baris)
             atribut = [
                 sesi["aset"], sesi["simbol"], sesi["hashrate"], 
-                sesi["durasi"], f"{sesi['reward']:.8f}", f"{sesi['energi']:.2f}", 
-                sesi["tarif"], f"{sesi['total_biaya']:.2f}", sesi["tanggal"]
+                sesi["durasi"], f"{sesi['reward']:.8f}", sesi["daya"], f"{sesi['energi']:.2f}", 
+                sesi["tarif"], f"{sesi['total_biaya']:.2f}", f"{sesi['pendapatan']:.2f}", f"{sesi['profit_bersih']:.2f}", sesi["tanggal"]
             ]
             for kolom, data in enumerate(atribut):
                 item = QTableWidgetItem(str(data))
@@ -385,9 +393,9 @@ class Kishar(QWidget):
         try:
             with open('laporan_mining.csv', 'w', newline='') as f:
                 writer = csv.writer(f)
-                writer.writerow(["aset", "simbol", "hashrate", "durasi", "est_reward", "energi", "tarif_listrik", "total_biaya", "tanggal"])
+                writer.writerow(["aset", "simbol", "hashrate", "durasi", "est_reward", "daya_hardware", "energi", "tarif_listrik", "total_biaya", "pendapatan", "profit_bersih", "tanggal"])
                 for s in self.daftar_sesi:
-                    writer.writerow([s["aset"], s["simbol"], s["hashrate"], s["durasi"], s["reward"], s["energi"], s["tarif"], s["total_biaya"], s["tanggal"]])
+                    writer.writerow([s["aset"], s["simbol"], s["hashrate"], s["durasi"], s["reward"], s["daya"], s["energi"], s["tarif"], s["total_biaya"], s["pendapatan"], s["profit_bersih"], s["tanggal"]])
             QMessageBox.information(self, "sukses", "data berhasil diekspor ke laporan_mining.csv")
         except Exception as e:
             QMessageBox.critical(self, "error", f"gagal mengekspor: {str(e)}")
