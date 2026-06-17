@@ -37,6 +37,7 @@ class CoinFormDialog(QDialog):
         self.i_algo = QLineEdit(self)
         self.i_hadiah = QLineEdit(self)
         self.i_waktu = QLineEdit(self)
+        self.i_harga = QLineEdit(self)
         
         if koin:
             self.i_nama.setText(koin.nama)
@@ -45,6 +46,7 @@ class CoinFormDialog(QDialog):
             self.i_algo.setText(koin.algoritma)
             self.i_hadiah.setText(str(koin.block_reward))
             self.i_waktu.setText(str(koin.block_time))
+            self.i_harga.setText(str(koin.harga))
             
         self.tata_letak.addRow("nama:", self.i_nama)
         self.tata_letak.addRow("simbol:", self.i_simbol)
@@ -53,6 +55,7 @@ class CoinFormDialog(QDialog):
         self.tata_letak.addRow("algo:", self.i_algo)
         self.tata_letak.addRow("hadiah:", self.i_hadiah)
         self.tata_letak.addRow("waktu:", self.i_waktu)
+        self.tata_letak.addRow("harga (Rp):", self.i_harga)
         
         self.tombol = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
         self.tombol.accepted.connect(self.accept)
@@ -65,11 +68,13 @@ class CoinFormDialog(QDialog):
         try:
             reward = float(self.i_hadiah.text())
             waktu = float(self.i_waktu.text())
+            harga_val = float(self.i_harga.text())
         except:
             reward = 0.0
             waktu = 0.0
+            harga_val = 0.0
             
-        if tnh < 0 or reward < 0 or waktu < 0:
+        if tnh < 0 or reward < 0 or waktu < 0 or harga_val < 0:
             QMessageBox.warning(self, "Error", "Input tidak boleh bernilai negatif/minus!")
             
         return {
@@ -79,7 +84,8 @@ class CoinFormDialog(QDialog):
             'total_network_hash': max(0.0, tnh),
             'algoritma': self.i_algo.text(),
             'block_reward': max(0.0, reward),
-            'block_time': max(0.0, waktu)
+            'block_time': max(0.0, waktu),
+            'harga': max(0.0, harga_val)
         }
 
 class Kishar(QWidget):
@@ -116,9 +122,9 @@ class Kishar(QWidget):
         self.ui.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.ui.tableWidget_2.setEditTriggers(QAbstractItemView.NoEditTriggers)
         
-        self.ui.tableWidget.setColumnCount(7)
+        self.ui.tableWidget.setColumnCount(8)
         self.ui.tableWidget.setHorizontalHeaderLabels([
-            "Nama", "Simbol", "Total Network Hash", "Algoritma", "Block Reward", "Block Time(det)", "Aksi"
+            "Nama", "Simbol", "Total Network Hash", "Algoritma", "Block Reward", "Block Time(det)", "Harga (Rp)", "Aksi"
         ])
         
         # inisialisasi daftar sesi laporan
@@ -170,11 +176,11 @@ class Kishar(QWidget):
             
             atribut = [
                 koin.nama, koin.simbol, koin.total_network_hash, 
-                koin.algoritma, koin.block_reward, koin.block_time
+                koin.algoritma, koin.block_reward, koin.block_time, f"{koin.harga:,.2f}"
             ]
             
             kolom = 0
-            while kolom < 6:
+            while kolom < 7:
                 item = QTableWidgetItem(str(atribut[kolom]))
                 self.ui.tableWidget.setItem(baris, kolom, item)
                 kolom = kolom + 1
@@ -201,7 +207,7 @@ class Kishar(QWidget):
         btn_edit.clicked.connect(lambda checked, k=koin: self.editCoin(k))
         btn_hapus.clicked.connect(lambda checked, k=koin: self.delCoin(k))
 
-        kolom_aksi = 6 
+        kolom_aksi = 7 
         self.ui.tableWidget.setCellWidget(baris, kolom_aksi, widget_aksi)
 
     def update_combobox_aset(self):
@@ -216,7 +222,7 @@ class Kishar(QWidget):
         layar = CoinFormDialog(self)
         if layar.exec():
             isi = layar.get_data()
-            k_baru = CryptoAsset(isi['nama'], isi['simbol'], isi['algoritma'], float(isi['total_network_hash']), float(isi['block_reward']), float(isi['block_time']))
+            k_baru = CryptoAsset(isi['nama'], isi['simbol'], isi['algoritma'], float(isi['total_network_hash']), float(isi['block_reward']), float(isi['block_time']), float(isi['harga']))
             self.engine.add_coin(k_baru)
             self.render_tableWidget()
             self.update_combobox_aset()
@@ -225,7 +231,7 @@ class Kishar(QWidget):
         layar = CoinFormDialog(self, target)
         if layar.exec():
             isi = layar.get_data()
-            k_baru = CryptoAsset(isi['nama'], isi['simbol'], isi['algoritma'], float(isi['total_network_hash']), float(isi['block_reward']), float(isi['block_time']))
+            k_baru = CryptoAsset(isi['nama'], isi['simbol'], isi['algoritma'], float(isi['total_network_hash']), float(isi['block_reward']), float(isi['block_time']), float(isi['harga']))
             self.engine.update_coin(target, k_baru)
             self.render_tableWidget()
             self.update_combobox_aset()
@@ -262,10 +268,10 @@ class Kishar(QWidget):
                 self.ui.tableWidget.insertRow(baris)
                 atribut = [
                     k.nama, k.simbol, k.total_network_hash, 
-                    k.algoritma, k.block_reward, k.block_time
+                    k.algoritma, k.block_reward, k.block_time, f"{k.harga:,.2f}"
                 ]
                 kolom = 0
-                while kolom < 6:
+                while kolom < 7:
                     item = QTableWidgetItem(str(atribut[kolom]))
                     self.ui.tableWidget.setItem(baris, kolom, item)
                     kolom = kolom + 1
